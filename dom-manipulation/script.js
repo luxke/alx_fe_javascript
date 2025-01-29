@@ -30,7 +30,7 @@ function showRandomQuote() {
     <small>— ${randomQuote.category}</small>
   `;
 
- sessionStorage.setItem('lastViewedQuote', JSON.stringify(randomQuote));
+  sessionStorage.setItem('lastViewedQuote', JSON.stringify(randomQuote));
 }
 
 function addQuote(quoteText, quoteCategory) {
@@ -68,7 +68,6 @@ function exportToJsonFile() {
 
   URL.revokeObjectURL(url);
 }
-
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
   fileReader.onload = function(event) {
@@ -85,7 +84,7 @@ function initialize() {
   showRandomQuote();
   loadLastViewedQuote();
 
-  document.getElementById('addQuoteForm').addEventListener('submit', (e) => {
+ document.getElementById('addQuoteForm').addEventListener('submit', (e) => {
     e.preventDefault();
 
     const quoteText = document.getElementById('quoteText').value.trim();
@@ -97,7 +96,9 @@ function initialize() {
 
   document.getElementById('exportQuotes').addEventListener('click', exportToJsonFile);
 
- document.getElementById('importFile').addEventListener('change', importFromJsonFile);
+  document.getElementById('importFile').addEventListener('change', importFromJsonFile);
+
+  document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 }
 
 initialize();
