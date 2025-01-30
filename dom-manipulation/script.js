@@ -14,13 +14,20 @@ function saveQuotes() {
 }
 
 // Fetch quotes from a remote server
-async function fetchQuotesFromServer(url) {
+async function fetchQuotesFromServer() {
   try {
-    const response = await fetch(url);
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
     if (!response.ok) {
       throw new Error("Failed to fetch quotes");
     }
-    const fetchedQuotes = await response.json();
+    const fetchedData = await response.json();
+    
+    // Transform API data to match the required format
+    const fetchedQuotes = fetchedData.map(post => ({
+      text: post.title,
+      category: "Fetched"
+    }));
+    
     quotes = fetchedQuotes;
     saveQuotes();
     populateCategories();
@@ -107,10 +114,10 @@ function initialize() {
   document.getElementById('categoryFilter').addEventListener('change', (e) => {
     filterQuotes(e.target.value);
   });
+  
+  // Fetch quotes from external API
+  fetchQuotesFromServer();
 }
 
 // Run initialization
 initialize();
-
-// Optionally, fetch quotes from a server (provide a valid URL)
-// fetchQuotesFromServer('https://example.com/quotes.json');
