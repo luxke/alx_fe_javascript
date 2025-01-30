@@ -24,7 +24,7 @@ function showNotification(message) {
   }, 5000);
 }
 
-// Fetch new quotes from the server (Restored Function)
+// Fetch new quotes from the server
 async function fetchQuotesFromServer() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
@@ -60,9 +60,43 @@ async function fetchQuotesFromServer() {
   }
 }
 
-// Sync function (calls fetchQuotesFromServer)
+// Send new quote to the server using POST
+async function sendQuoteToServer(quote) {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(quote)
+    });
+
+    if (!response.ok) {
+      throw new Error("Failed to send quote to the server");
+    }
+
+    const responseData = await response.json();
+    console.log("Quote successfully sent to the server:", responseData);
+    showNotification("Quote successfully synced to the server!");
+
+  } catch (error) {
+    console.error("Error sending quote:", error);
+  }
+}
+
+// Sync function: Fetch new quotes and send new ones
 async function syncQuotes() {
   await fetchQuotesFromServer();
+
+  // Send new quotes to the server
+  quotes.forEach(quote => {
+    if (!quote.synced) {
+      sendQuoteToServer(quote);
+      quote.synced = true; // Mark quote as synced
+    }
+  });
+
+  saveQuotes();
 }
 
 // Load last viewed quote from sessionStorage
@@ -136,7 +170,7 @@ function filterQuotes(category) {
   filteredQuotes.forEach((quote) => displayQuote(quote));
 }
 
-// Manually trigger full sync (clears local storage and fetches fresh data)
+// Manually trigger full sync
 async function manualSync() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
@@ -148,6 +182,7 @@ async function manualSync() {
     quotes = fetchedData.map((post) => ({
       text: post.title,
       category: "Fetched",
+      synced: true
     }));
 
     saveQuotes();
@@ -171,6 +206,7 @@ function initialize() {
   });
 
   document.getElementById("manualSync").addEventListener("click", manualSync);
+  document.getElementById("syncToServer").addEventListener("click", syncQuotes);
 
   // Periodic sync (every 60 seconds)
   setInterval(syncQuotes, 60000);
