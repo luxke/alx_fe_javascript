@@ -18,14 +18,14 @@ function showNotification(message) {
   const notification = document.getElementById("notification");
   notification.textContent = message;
   notification.style.display = "block";
-  
+
   setTimeout(() => {
     notification.style.display = "none";
-  }, 5000); // Hide after 5 seconds
+  }, 5000);
 }
 
-// Fetch new quotes from server and sync
-async function syncQuotes() {
+// Fetch new quotes from the server (Restored Function)
+async function fetchQuotesFromServer() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
     if (!response.ok) {
@@ -42,10 +42,8 @@ async function syncQuotes() {
     let updated = false;
     const localQuotesMap = new Map(quotes.map(q => [q.text, q]));
 
-    // Compare with existing quotes
     fetchedQuotes.forEach(serverQuote => {
       if (!localQuotesMap.has(serverQuote.text)) {
-        // Add new quotes from server
         quotes.push(serverQuote);
         updated = true;
       }
@@ -58,11 +56,16 @@ async function syncQuotes() {
       showRandomQuote();
     }
   } catch (error) {
-    console.error("Error syncing quotes:", error);
+    console.error("Error fetching quotes:", error);
   }
 }
 
-// Load last viewed quote from sessionStorage (if available)
+// Sync function (calls fetchQuotesFromServer)
+async function syncQuotes() {
+  await fetchQuotesFromServer();
+}
+
+// Load last viewed quote from sessionStorage
 function loadLastViewedQuote() {
   const lastQuote = sessionStorage.getItem("lastViewedQuote");
   if (lastQuote) {
@@ -87,7 +90,7 @@ function showRandomQuote() {
 // Display quote
 function displayQuote(quote) {
   const quoteDisplay = document.getElementById("quoteDisplay");
-  quoteDisplay.innerHTML = ""; // Clear previous content
+  quoteDisplay.innerHTML = "";
 
   const quoteText = document.createElement("p");
   quoteText.textContent = `"${quote.text}"`;
@@ -104,7 +107,7 @@ function populateCategories() {
   const categorySelect = document.getElementById("categoryFilter");
   const uniqueCategories = [...new Set(quotes.map((quote) => quote.category))];
 
-  categorySelect.innerHTML = ""; // Clear previous options
+  categorySelect.innerHTML = "";
   const allOption = document.createElement("option");
   allOption.value = "all";
   allOption.textContent = "All Categories";
@@ -117,7 +120,7 @@ function populateCategories() {
     categorySelect.appendChild(option);
   });
 
-  categorySelect.value = selectedCategory; // Set previously selected category
+  categorySelect.value = selectedCategory;
 }
 
 // Filter quotes by category
@@ -128,7 +131,7 @@ function filterQuotes(category) {
   const filteredQuotes =
     category === "all" ? quotes : quotes.filter((quote) => quote.category === category);
   const quoteDisplay = document.getElementById("quoteDisplay");
-  quoteDisplay.innerHTML = ""; // Clear previous quotes
+  quoteDisplay.innerHTML = "";
 
   filteredQuotes.forEach((quote) => displayQuote(quote));
 }
@@ -173,7 +176,7 @@ function initialize() {
   setInterval(syncQuotes, 60000);
 
   // Fetch quotes from external API initially
-  syncQuotes();
+  fetchQuotesFromServer();
 }
 
 // Run initialization
