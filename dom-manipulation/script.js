@@ -89,14 +89,19 @@ async function syncQuotes() {
   await fetchQuotesFromServer();
 
   // Send new quotes to the server
-  quotes.forEach(quote => {
+  let synced = false;
+  for (let quote of quotes) {
     if (!quote.synced) {
-      sendQuoteToServer(quote);
+      await sendQuoteToServer(quote);
       quote.synced = true; // Mark quote as synced
+      synced = true;
     }
-  });
+  }
 
-  saveQuotes();
+  if (synced) {
+    saveQuotes();
+    alert("Quotes synced with server!"); // Show alert after syncing
+  }
 }
 
 // Load last viewed quote from sessionStorage
