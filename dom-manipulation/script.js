@@ -13,8 +13,19 @@ function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
-// Fetch quotes from a remote server
-async function fetchQuotesFromServer() {
+// Show notification to user
+function showNotification(message) {
+  const notification = document.getElementById("notification");
+  notification.textContent = message;
+  notification.style.display = "block";
+  
+  setTimeout(() => {
+    notification.style.display = "none";
+  }, 5000); // Hide after 5 seconds
+}
+
+// Fetch new quotes from server and sync
+async function syncQuotes() {
   try {
     const response = await fetch("https://jsonplaceholder.typicode.com/posts");
     if (!response.ok) {
@@ -28,12 +39,26 @@ async function fetchQuotesFromServer() {
       category: "Fetched",
     }));
 
-    quotes = fetchedQuotes;
-    saveQuotes();
-    populateCategories();
-    showRandomQuote();
+    let updated = false;
+    const localQuotesMap = new Map(quotes.map(q => [q.text, q]));
+
+    // Compare with existing quotes
+    fetchedQuotes.forEach(serverQuote => {
+      if (!localQuotesMap.has(serverQuote.text)) {
+        // Add new quotes from server
+        quotes.push(serverQuote);
+        updated = true;
+      }
+    });
+
+    if (updated) {
+      saveQuotes();
+      showNotification("New quotes were added from the server!");
+      populateCategories();
+      showRandomQuote();
+    }
   } catch (error) {
-    console.error("Error fetching quotes:", error);
+    console.error("Error syncing quotes:", error);
   }
 }
 
@@ -108,34 +133,26 @@ function filterQuotes(category) {
   filteredQuotes.forEach((quote) => displayQuote(quote));
 }
 
-// **NEW: Add a Quote and Send it via POST**
-async function addQuote(text, category) {
-  const newQuote = { text, category };
-  
-  // Save to localStorage
-  quotes.push(newQuote);
-  saveQuotes();
-  populateCategories();
-  showRandomQuote();
-
-  // Send to external server (optional)
+// Manually trigger full sync (clears local storage and fetches fresh data)
+async function manualSync() {
   try {
-    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(newQuote),
-    });
-
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts");
     if (!response.ok) {
-      throw new Error("Failed to send quote");
+      throw new Error("Failed to fetch quotes");
     }
+    const fetchedData = await response.json();
 
-    const responseData = await response.json();
-    console.log("Quote successfully posted:", responseData);
+    quotes = fetchedData.map((post) => ({
+      text: post.title,
+      category: "Fetched",
+    }));
+
+    saveQuotes();
+    showNotification("Local quotes have been replaced with fresh data from the server!");
+    populateCategories();
+    showRandomQuote();
   } catch (error) {
-    console.error("Error posting quote:", error);
+    console.error("Error during manual sync:", error);
   }
 }
 
@@ -150,23 +167,13 @@ function initialize() {
     filterQuotes(e.target.value);
   });
 
-  // Handle form submission for adding new quotes
-  document.getElementById("addQuoteForm").addEventListener("submit", (e) => {
-    e.preventDefault();
-    const text = document.getElementById("quoteText").value.trim();
-    const category = document.getElementById("quoteCategory").value.trim();
+  document.getElementById("manualSync").addEventListener("click", manualSync);
 
-    if (text && category) {
-      addQuote(text, category);
-      document.getElementById("quoteText").value = ""; // Clear input
-      document.getElementById("quoteCategory").value = ""; // Clear input
-    } else {
-      alert("Please enter both a quote and a category.");
-    }
-  });
+  // Periodic sync (every 60 seconds)
+  setInterval(syncQuotes, 60000);
 
-  // Fetch quotes from external API
-  fetchQuotesFromServer();
+  // Fetch quotes from external API initially
+  syncQuotes();
 }
 
 // Run initialization
