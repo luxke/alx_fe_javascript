@@ -13,6 +13,23 @@ function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
 }
 
+// Fetch quotes from a remote server
+async function fetchQuotesFromServer(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error("Failed to fetch quotes");
+    }
+    const fetchedQuotes = await response.json();
+    quotes = fetchedQuotes;
+    saveQuotes();
+    populateCategories();
+    showRandomQuote();
+  } catch (error) {
+    console.error("Error fetching quotes:", error);
+  }
+}
+
 // Load last viewed quote from sessionStorage (if available)
 function loadLastViewedQuote() {
   const lastQuote = sessionStorage.getItem('lastViewedQuote');
@@ -94,3 +111,6 @@ function initialize() {
 
 // Run initialization
 initialize();
+
+// Optionally, fetch quotes from a server (provide a valid URL)
+// fetchQuotesFromServer('https://example.com/quotes.json');
