@@ -6,6 +6,8 @@ let quotes = JSON.parse(localStorage.getItem('quotes')) || [
   { text: "Key to success is education.", category: "joy" },
 ];
 
+let selectedCategory = localStorage.getItem('selectedCategory') || "all";
+
 // Save quotes to localStorage
 function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
@@ -21,8 +23,11 @@ function loadLastViewedQuote() {
 
 // Show a random quote
 function showRandomQuote() {
-  const randomIndex = Math.floor(Math.random() * quotes.length);
-  const randomQuote = quotes[randomIndex];
+  const filteredQuotes = selectedCategory === "all" ? quotes : quotes.filter(quote => quote.category === selectedCategory);
+  if (filteredQuotes.length === 0) return;
+
+  const randomIndex = Math.floor(Math.random() * filteredQuotes.length);
+  const randomQuote = filteredQuotes[randomIndex];
   displayQuote(randomQuote);
   sessionStorage.setItem('lastViewedQuote', JSON.stringify(randomQuote));
 }
@@ -59,10 +64,15 @@ function populateCategories() {
     option.textContent = category;
     categorySelect.appendChild(option);
   });
+  
+  categorySelect.value = selectedCategory; // Set previously selected category
 }
 
 // Filter quotes by category
 function filterQuotes(category) {
+  selectedCategory = category;
+  localStorage.setItem('selectedCategory', selectedCategory);
+  
   const filteredQuotes = category === "all" ? quotes : quotes.filter(quote => quote.category === category);
   const quoteDisplay = document.getElementById('quoteDisplay');
   quoteDisplay.innerHTML = ''; // Clear previous quotes
