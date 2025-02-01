@@ -130,19 +130,19 @@ function filterQuotes(category) {
 
 // Function to display quotes (you can customize this function to match your UI)
 function displayQuotes(filteredQuotes) {
-  const quoteContainer = document.getElementById("quoteContainer");
-  
-  if (!quoteContainer) return; // Ensure the container exists
+  const quoteDisplay = document.getElementById("quoteDisplay");
+
+  if (!quoteDisplay) return; // Ensure the container exists
   
   // Clear any previous quotes
-  quoteContainer.innerHTML = "";
+  quoteDisplay.innerHTML = "";
 
   // Display each filtered quote
   filteredQuotes.forEach((quote) => {
     const quoteElement = document.createElement("div");
     quoteElement.classList.add("quote");
     quoteElement.textContent = `"${quote.text}" - ${quote.category}`;
-    quoteContainer.appendChild(quoteElement);
+    quoteDisplay.appendChild(quoteElement);
   });
 }
 
