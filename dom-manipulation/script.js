@@ -22,11 +22,11 @@ function getRandomQuote() {
 // Function to create a form for adding new quotes
 function createAddQuoteForm() {
   const formContainer = document.getElementById("addQuoteFormContainer");
-  
+
   if (!formContainer) return; // Ensure the container exists
 
   formContainer.innerHTML = ""; // Clear previous form if any
-  
+
   const form = document.createElement("form");
   form.id = "addQuoteForm";
 
@@ -110,6 +110,52 @@ async function syncQuoteWithServer(quote) {
   }
 }
 
+// Function to show notification
+function showNotification(message) {
+  alert(message); // For now, we use an alert. You can replace it with a custom notification UI.
+}
+
+// Function to export quotes to a JSON file
+function exportToJsonFile() {
+  const quotesData = JSON.stringify(quotes, null, 2); // Convert quotes array to JSON string with indentation
+  const blob = new Blob([quotesData], { type: "application/json" }); // Create a Blob for the JSON data
+  const link = document.createElement("a"); // Create an anchor element
+
+  link.href = URL.createObjectURL(blob); // Create a download URL for the blob
+  link.download = "quotes.json"; // Set the file name for the downloaded file
+  link.click(); // Trigger the download
+}
+
+// Function to import quotes from a JSON file
+function importFromJsonFile(event) {
+  const file = event.target.files[0];
+
+  if (!file) {
+    showNotification("No file selected.");
+    return;
+  }
+
+  const reader = new FileReader();
+  reader.onload = function (e) {
+    try {
+      const importedQuotes = JSON.parse(e.target.result);
+      if (Array.isArray(importedQuotes)) {
+        quotes = [...quotes, ...importedQuotes]; // Merge imported quotes with existing quotes
+        saveQuotes();
+        showNotification("Quotes imported successfully!");
+        showRandomQuote(); // Optionally, show a random quote after import
+      } else {
+        showNotification("Invalid file format.");
+      }
+    } catch (error) {
+      console.error("Error parsing JSON file:", error);
+      showNotification("Failed to import quotes.");
+    }
+  };
+
+  reader.readAsText(file);
+}
+
 // Initialize
 function initialize() {
   showRandomQuote();
@@ -126,6 +172,12 @@ function initialize() {
 
   // Add the Add Quote Form
   createAddQuoteForm();
+
+  // Add event listener for the export button
+  document.getElementById("exportQuotesButton").addEventListener("click", exportToJsonFile);
+
+  // Add event listener for the import button
+  document.getElementById("importQuotesInput").addEventListener("change", importFromJsonFile);
 }
 
 // Run initialization
