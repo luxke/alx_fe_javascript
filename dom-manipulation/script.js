@@ -179,6 +179,27 @@ function populateCategories() {
   filterQuotes(savedCategory);
 }
 
+// Function to export quotes to a JSON file
+function exportToJsonFile() {
+  const jsonData = JSON.stringify(quotes, null, 2); // Convert the quotes to a formatted JSON string
+  
+  const blob = new Blob([jsonData], { type: "application/json" }); // Create a Blob object
+  const link = document.createElement("a"); // Create a temporary link element
+  
+  // Create a URL for the Blob object
+  const url = URL.createObjectURL(blob);
+  
+  // Set up the link for downloading the file
+  link.href = url;
+  link.download = "quotes.json"; // Name of the file to download
+  
+  // Programmatically click the link to trigger the download
+  link.click();
+  
+  // Clean up the URL object
+  URL.revokeObjectURL(url);
+}
+
 // Initialize
 function initialize() {
   showRandomQuote();
