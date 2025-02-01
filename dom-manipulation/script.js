@@ -13,12 +13,18 @@ function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
+// Function to get a random quote
+function getRandomQuote() {
+  if (quotes.length === 0) return null;
+  return quotes[Math.floor(Math.random() * quotes.length)];
+}
+
 // Function to create a form for adding new quotes
 function createAddQuoteForm() {
   const formContainer = document.getElementById("addQuoteFormContainer");
   
-  if (!formContainer) return; // Ensure container exists
-  
+  if (!formContainer) return; // Ensure the container exists
+
   formContainer.innerHTML = ""; // Clear previous form if any
   
   const form = document.createElement("form");
@@ -54,7 +60,7 @@ function createAddQuoteForm() {
   form.appendChild(categoryInput);
   form.appendChild(submitButton);
 
-  form.addEventListener("submit", (e) => {
+  form.addEventListener("submit", async (e) => {
     e.preventDefault();
 
     const quoteText = textInput.value.trim();
@@ -64,7 +70,10 @@ function createAddQuoteForm() {
       const newQuote = { text: quoteText, category: quoteCategory };
       quotes.push(newQuote);
       saveQuotes();
-      alert("New quote added successfully!");
+      showNotification("New quote added successfully!");
+
+      // Sync quote to the server
+      await syncQuoteWithServer(newQuote);
 
       // Clear the form
       textInput.value = "";
@@ -72,15 +81,50 @@ function createAddQuoteForm() {
       populateCategories();
       showRandomQuote();
     } else {
-      alert("Please fill in both fields.");
+      showNotification("Please fill in both fields.");
     }
   });
 
   formContainer.appendChild(form);
 }
 
+// Function to sync a new quote with the server
+async function syncQuoteWithServer(quote) {
+  try {
+    const response = await fetch("https://jsonplaceholder.typicode.com/posts", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(quote),
+    });
+
+    if (response.ok) {
+      showNotification("Quotes synced with server!");
+    } else {
+      throw new Error("Failed to sync with server.");
+    }
+  } catch (error) {
+    console.error("Sync error:", error);
+    showNotification("Failed to sync quotes.");
+  }
+}
+
 // Initialize
 function initialize() {
+  showRandomQuote();
+  loadLastViewedQuote();
+  populateCategories();
+
+  document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+  document.getElementById("categoryFilter").addEventListener("change", (e) => {
+    filterQuotes(e.target.value);
+  });
+
+  // Fetch quotes from external API initially
+  fetchQuotesFromServer();
+
+  // Add the Add Quote Form
   createAddQuoteForm();
 }
 
