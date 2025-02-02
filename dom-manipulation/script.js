@@ -69,25 +69,56 @@ function addQuote() {
 
 // Export quotes to a JSON file
 function exportToJson() {
-  const blob = new Blob([JSON.stringify(quotes, null, 2)], { type: 'application/json' });
+  // Convert the quotes array into a JSON string with indentation for readability
+  const jsonString = JSON.stringify(quotes, null, 2);
+
+  // Create a Blob object containing the JSON string
+  const blob = new Blob([jsonString], { type: 'application/json' });
+
+  // Create an Object URL for the Blob
   const url = URL.createObjectURL(blob);
+
+  // Create an anchor element to trigger the download
   const a = document.createElement("a");
   a.href = url;
-  a.download = "quotes.json";
+  a.download = "quotes.json"; // You can customize this filename if needed
   a.click();
+
+  // Revoke the Object URL after the download is triggered to clean up
   URL.revokeObjectURL(url);
 }
 
 // Import quotes from a JSON file
 function importFromJsonFile(event) {
   const fileReader = new FileReader();
-  fileReader.onload = function (event) {
-      const importedQuotes = JSON.parse(event.target.result);
-      quotes.push(...importedQuotes);
-      saveQuotes(); // Save updated quotes to local storage
-      alert('Quotes imported successfully!');
+
+  fileReader.onload = function(event) {
+      try {
+          // Parse the content of the JSON file
+          const importedQuotes = JSON.parse(event.target.result);
+
+          // Validate that the imported data is an array of quotes
+          if (Array.isArray(importedQuotes) && importedQuotes.every(quote => quote.text && quote.category)) {
+              // Merge the imported quotes with the existing ones
+              quotes.push(...importedQuotes);
+              saveQuotes(); // Save updated quotes to local storage
+              alert('Quotes imported successfully!');
+          } else {
+              alert('Invalid file format. Please ensure the file contains an array of quotes with the correct format.');
+          }
+      } catch (e) {
+          alert('Error reading file: ' + e.message);
+      }
   };
-  fileReader.readAsText(event.target.files[0]);
+
+  // Check if a file was selected
+  const file = event.target.files[0];
+  if (file) {
+      // Read the selected file as text
+      fileReader.readAsText(file);
+  } else {
+      alert('Please select a valid JSON file.');
+  }
 }
 
 function createAddQuoteForm() {
