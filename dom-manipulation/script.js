@@ -1,7 +1,7 @@
 const quotes = [
-  { text: "hard work pays.", category: "Inspiration" },
-  { text: "love wins.", category: "Motivation" },
-  { text: "failure is not fatal.", category: "Perseverance" }
+  { text: "The best way to predict the future is to create it.", category: "Inspiration" },
+  { text: "Do what you can, with what you have, where you are.", category: "Motivation" },
+  { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", category: "Perseverance" }
 ];
 
 // Function to load quotes from local storage (if any)
@@ -18,40 +18,42 @@ function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
-// Simulate fetching quotes from the server using JSONPlaceholder (or similar API)
-function fetchQuotesFromServer() {
-  return new Promise((resolve) => {
-      setTimeout(() => {
-          // Simulating a server response with new data (could be from JSONPlaceholder)
-          const serverQuotes = [
-              { text: "New Quote from the Server.", category: "Technology" },
-              { text: "Innovation distinguishes between a leader and a follower.", category: "Leadership" },
-          ];
-          resolve(serverQuotes);
-      }, 2000); // Simulate a 2-second delay
-  });
+// Fetch quotes from JSONPlaceholder (or a similar API)
+async function fetchQuotesFromServer() {
+  try {
+      const response = await fetch('https://jsonplaceholder.typicode.com/posts');
+      const serverQuotes = await response.json();
+
+      // Simulating that the server provides quotes with a specific structure
+      return serverQuotes.slice(0, 3).map(quote => ({
+          text: quote.title,
+          category: "Server"
+      }));
+  } catch (error) {
+      console.error('Error fetching data from server:', error);
+      return [];
+  }
 }
 
 // Periodically fetch quotes from the server
-function syncQuotes() {
-  fetchQuotesFromServer().then(serverQuotes => {
-      console.log("Server quotes fetched:", serverQuotes);
-      
-      // Check for discrepancies and handle conflict resolution
-      const conflicts = handleConflicts(serverQuotes);
-      
-      if (conflicts) {
-          // Notify the user of the conflict
-          alert("New quotes have been fetched from the server. Conflicts resolved by keeping server data.");
-      } else {
-          // If no conflicts, just update with new data
-          alert("Quotes have been updated from the server.");
-      }
+async function syncQuotes() {
+  const serverQuotes = await fetchQuotesFromServer();
+  console.log("Server quotes fetched:", serverQuotes);
 
-      // Update local storage with the merged quotes
-      saveQuotes();
-      displayQuotes(quotes); // Refresh the displayed quotes
-  });
+  // Check for discrepancies and handle conflict resolution
+  const conflicts = handleConflicts(serverQuotes);
+
+  if (conflicts) {
+      // Notify the user of the conflict
+      alert("New quotes have been fetched from the server. Conflicts resolved by keeping server data.");
+  } else {
+      // If no conflicts, just update with new data
+      alert("Quotes have been updated from the server.");
+  }
+
+  // Update local storage with the merged quotes
+  saveQuotes();
+  displayQuotes(quotes); // Refresh the displayed quotes
 }
 
 // Simple conflict resolution: Server data takes precedence
