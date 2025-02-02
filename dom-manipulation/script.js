@@ -1,7 +1,7 @@
 const quotes = [
-  { text: "love wins .", category: "love" },
-  { text: "Do hard things.", category: "Motivation" },
-  { text: "hard work leads to success.", category: "Hard work" }
+  { text: "The best way to predict the future is to create it.", category: "Inspiration" },
+  { text: "Do what you can, with what you have, where you are.", category: "Motivation" },
+  { text: "Success is not final, failure is not fatal: it is the courage to continue that counts.", category: "Perseverance" }
 ];
 
 function showRandomQuote() {
@@ -10,7 +10,10 @@ function showRandomQuote() {
   document.getElementById("quoteDisplay").innerHTML = `"${quote.text}" <br><strong>- (${quote.category})</strong>`;
 }
 
-document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+// Add event listener for "Show New Quote" button when DOM is fully loaded
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("newQuote").addEventListener("click", showRandomQuote);
+});
 
 function addQuote() {
   const newQuoteText = document.getElementById("newQuoteText").value.trim();
@@ -25,6 +28,32 @@ function addQuote() {
   quotes.push(newQuote);
   document.getElementById("newQuoteText").value = "";
   document.getElementById("newQuoteCategory").value = "";
+
   alert("New quote added successfully!");
+  showRandomQuote();
+
+  // Optionally highlight the newly added quote (could be optional or styled differently)
+  const quoteContainer = document.getElementById("quoteDisplay");
+  quoteContainer.style.backgroundColor = "#f0f8ff"; // Light blue background for a short time
+  setTimeout(() => {
+      quoteContainer.style.backgroundColor = "";
+  }, 2000);
 }
 
+function createAddQuoteForm() {
+  const formContainer = document.createElement("div");
+  formContainer.innerHTML = `
+      <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
+      <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
+      <button id="addQuoteBtn">Add Quote</button>
+  `;
+
+  // Add event listener for "Add Quote" button after form creation
+  const addQuoteBtn = formContainer.querySelector("#addQuoteBtn");
+  addQuoteBtn.addEventListener("click", addQuote);
+
+  document.body.appendChild(formContainer);
+}
+
+// Create the form for adding new quotes when DOM is fully loaded
+document.addEventListener("DOMContentLoaded", createAddQuoteForm);
