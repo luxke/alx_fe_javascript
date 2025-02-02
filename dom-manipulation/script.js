@@ -1,14 +1,13 @@
 const quotes = [
-  { text: "Be youuuuu.", category: "love" },
-  { text: "Trust the process .", category: "Motivation" },
-  { text: "laugh out loud hahaaaaa.", category: "intentions" }
- 
+  { text: "love wins .", category: "love" },
+  { text: "Do hard things.", category: "Motivation" },
+  { text: "hard work leads to success.", category: "Hard work" }
 ];
 
 function showRandomQuote() {
   const randomIndex = Math.floor(Math.random() * quotes.length);
   const quote = quotes[randomIndex];
-  document.getElementById("quoteDisplay").innerText = `"${quote.text}" - (${quote.category})`;
+  document.getElementById("quoteDisplay").innerHTML = `"${quote.text}" <br><strong>- (${quote.category})</strong>`;
 }
 
 document.getElementById("newQuote").addEventListener("click", showRandomQuote);
@@ -28,3 +27,4 @@ function addQuote() {
   document.getElementById("newQuoteCategory").value = "";
   alert("New quote added successfully!");
 }
+
